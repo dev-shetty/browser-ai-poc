@@ -36,6 +36,12 @@ export default function RootLayout({
             >
               Translator
             </Link>
+            <Link
+              href="/prompt"
+              className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+            >
+              Prompt
+            </Link>
           </nav>
         </div>
         {children}
