@@ -42,6 +42,18 @@ export default function RootLayout({
             >
               Prompt
             </Link>
+            <Link
+              href="/proofreader"
+              className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+            >
+              Proofreader
+            </Link>
+            <Link
+              href="/summarizer"
+              className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors"
+            >
+              Summarizer
+            </Link>
           </nav>
         </div>
         {children}

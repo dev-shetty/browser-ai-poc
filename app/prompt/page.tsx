@@ -15,7 +15,6 @@ export default function PromptPage() {
     error,
     status,
     modelDownloadProgress,
-    checkAvailability,
     downloadModel,
     createModel,
     setError,
