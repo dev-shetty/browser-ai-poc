@@ -2,51 +2,68 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useRef, useState } from "react"
-import { useModelAvailability } from "@/hooks/useModelAvailability"
+import { useEffect, useRef, useState } from "react"
 
-export default function PromptPage() {
+type TranslatorStatus =
+  | "downloadable"
+  | "downloading"
+  | "available"
+  | "unavailable"
+
+async function isPromptAIAvailable() {
+  return await LanguageModel.availability()
+}
+
+export default function TranslatorPage() {
+  const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState<TranslatorStatus>()
+  const [modelDownloadProgress, setModelDownloadProgress] = useState(0)
   const [text, setText] = useState<string>("")
   const [isPrompting, setIsPrompting] = useState(false)
   const [response, setResponse] = useState<string | null>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  const {
-    error,
-    status,
-    modelDownloadProgress,
-    checkAvailability,
-    downloadModel,
-    createModel,
-    setError,
-  } = useModelAvailability({
-    isSupported: () => "LanguageModel" in self,
-    checkAvailability: async () => {
-      return await LanguageModel.availability()
-    },
-    createModel: async () => {
-      return await LanguageModel.create({
-        initialPrompts: [
-          {
-            role: "system",
-            content: "You are a helpful and friendly assistant.",
-          },
-        ],
-      })
-    },
-    downloadModel: async (options, onProgress) => {
-      await LanguageModel.create({
-        monitor(m) {
-          m.addEventListener("downloadprogress", (e) => {
-            onProgress?.(e.loaded * 100)
-            console.log(`Downloaded ${e.loaded * 100}%`)
-          })
+  async function downloadPromptAIModel() {
+    await LanguageModel.create({
+      monitor(m) {
+        m.addEventListener("downloadprogress", (e) => {
+          setModelDownloadProgress(e.loaded * 100)
+          console.log(`Downloaded ${e.loaded * 100}%`)
+        })
+      },
+    })
+
+    const result = await isPromptAIAvailable()
+    setStatus(result)
+  }
+
+  const createPromptAIModel = async () => {
+    const promptAIModel = await LanguageModel.create({
+      initialPrompts: [
+        {
+          role: "system",
+          content: "You are a helpful and friendly assistant.",
         },
-      })
-    },
-    notSupportedError: "Prompt AI is not supported",
-    unavailableError: "Prompt AI is not available",
-  })
+      ],
+    })
+    return promptAIModel
+  }
+
+  const checkTranslationAvailability = async () => {
+    if (!isPromptAIAvailable()) {
+      setError("Prompt AI is not supported")
+      return
+    }
+
+    const result = await isPromptAIAvailable()
+
+    setStatus(result)
+
+    if (result === "unavailable") {
+      setError("Prompt AI is not available")
+      return
+    }
+  }
 
   const promptStream = async (text: string) => {
     const controller = new AbortController()
@@ -54,9 +71,7 @@ export default function PromptPage() {
 
     setIsPrompting(true)
     setResponse(null)
-    setError(null)
-
-    const promptAIModel = await createModel()
+    const promptAIModel = await createPromptAIModel()
     const result = promptAIModel.promptStreaming(text, {
       signal: controller.signal,
     })
@@ -85,10 +100,9 @@ export default function PromptPage() {
 
     setIsPrompting(true)
     setResponse(null)
-    setError(null)
 
     try {
-      const promptAIModel = await createModel()
+      const promptAIModel = await createPromptAIModel()
       const result = await promptAIModel.prompt(text, {
         signal: controller.signal,
       })
@@ -105,13 +119,19 @@ export default function PromptPage() {
     }
   }
 
+  useEffect(() => {
+    checkTranslationAvailability()
+  }, [])
+
   return (
     <div className="p-12 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Prompt AI</h1>
+      <h1 className="text-2xl font-bold mb-4">Prompt AI (Legacy)</h1>
       <p>Status: {status}</p>
       {status === "downloadable" && (
         <div className="my-4">
-          <Button onClick={() => downloadModel()}>Download Model</Button>
+          <Button onClick={() => downloadPromptAIModel()}>
+            Download Model
+          </Button>
           <p>Download progress: {modelDownloadProgress}%</p>
         </div>
       )}
@@ -142,7 +162,7 @@ export default function PromptPage() {
               onClick={() => {
                 abortControllerRef.current?.abort()
               }}
-              disabled={!isPrompting || !text}
+              disabled={!isPrompting}
             >
               Stop
             </Button>

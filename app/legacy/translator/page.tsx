@@ -9,18 +9,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useState } from "react"
-import { useModelAvailability } from "@/hooks/useModelAvailability"
+import { useEffect, useState } from "react"
+
+type TranslatorStatus =
+  | "downloadable"
+  | "downloading"
+  | "available"
+  | "unavailable"
 
 const SOURCE_LANGUAGE = "en"
 const TARGET_LANGUAGE = "kn"
 
-const DEFAULT_OPTIONS = {
-  sourceLanguage: SOURCE_LANGUAGE,
-  targetLanguage: TARGET_LANGUAGE,
+function isTranslatorSupported() {
+  return "Translator" in self
+}
+
+async function isTranslationAvailable(
+  sourceLanguage: string,
+  targetLanguage: string
+) {
+  return await Translator.availability({
+    sourceLanguage,
+    targetLanguage,
+  })
 }
 
 export default function TranslatorPage() {
+  const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState<TranslatorStatus>()
+  const [modelDownloadProgress, setModelDownloadProgress] = useState<number>(0)
   const [text, setText] = useState<string>("")
   const [translatedText, setTranslatedText] = useState<string | null>(null)
   const [selectedLanguages, setSelectedLanguages] = useState<{
@@ -31,67 +48,80 @@ export default function TranslatorPage() {
     targetLanguage: TARGET_LANGUAGE,
   })
 
-  const {
-    error,
-    status,
-    modelDownloadProgress,
-    checkAvailability,
-    downloadModel,
-    createModel,
-  } = useModelAvailability({
-    isSupported: () => "Translator" in self,
-    checkAvailability: async (options) => {
-      const { sourceLanguage, targetLanguage } = options || DEFAULT_OPTIONS
-      return await Translator.availability({
-        sourceLanguage,
-        targetLanguage,
-      })
-    },
-    createModel: async (options) => {
-      const { sourceLanguage, targetLanguage } = options || DEFAULT_OPTIONS
-      return await Translator.create({
-        sourceLanguage,
-        targetLanguage,
-      })
-    },
-    downloadModel: async (options, onProgress) => {
-      const { sourceLanguage, targetLanguage } = options || DEFAULT_OPTIONS
-      await Translator.create({
-        sourceLanguage,
-        targetLanguage,
-        monitor(m) {
-          m.addEventListener("downloadprogress", (e) => {
-            onProgress?.(e.loaded * 100)
-            console.log(`Downloaded ${e.loaded * 100}%`)
-          })
-        },
-      })
-    },
-    notSupportedError: "Translator is not supported",
-    unavailableError: "Translation is not available for the selected languages",
-  })
+  async function downloadTranslator(
+    sourceLanguage: string,
+    targetLanguage: string
+  ) {
+    await Translator.create({
+      sourceLanguage,
+      targetLanguage,
+      monitor(m) {
+        m.addEventListener("downloadprogress", (e) => {
+          setModelDownloadProgress(e.loaded * 100)
+          console.log(`Downloaded ${e.loaded * 100}%`)
+        })
+      },
+    })
+
+    const result = await isTranslationAvailable(sourceLanguage, targetLanguage)
+    setStatus(result)
+  }
+
+  const createTranslator = async (
+    sourceLanguage: string,
+    targetLanguage: string
+  ) => {
+    const translator = await Translator.create({
+      sourceLanguage,
+      targetLanguage,
+    })
+    return translator
+  }
+
+  const checkTranslationAvailability = async () => {
+    if (!isTranslatorSupported()) {
+      setError("Translator is not supported")
+      return
+    }
+
+    const result = await isTranslationAvailable(
+      SOURCE_LANGUAGE,
+      TARGET_LANGUAGE
+    )
+
+    setStatus(result)
+
+    if (result === "unavailable") {
+      setError("Translation is not available for the selected languages")
+      return
+    }
+  }
 
   const translate = async (text: string) => {
-    const translator = await createModel({
-      sourceLanguage: selectedLanguages.sourceLanguage,
-      targetLanguage: selectedLanguages.targetLanguage,
-    })
+    const translator = await createTranslator(
+      selectedLanguages.sourceLanguage,
+      selectedLanguages.targetLanguage
+    )
     const result = await translator.translate(text)
     setTranslatedText(result)
   }
 
+  useEffect(() => {
+    checkTranslationAvailability()
+  }, [])
+
   return (
     <div className="p-12">
-      <h1 className="text-2xl font-bold mb-4">Translator</h1>
+      <h1 className="text-2xl font-bold mb-4">Translator (Legacy)</h1>
       <p>Status: {status}</p>
       {status === "downloadable" && (
         <div className="my-4">
           <Button
             onClick={() =>
-              downloadModel({
-                sourceLanguage: selectedLanguages.sourceLanguage,
-                targetLanguage: selectedLanguages.targetLanguage,
-              })
+              downloadTranslator(
+                selectedLanguages.sourceLanguage,
+                selectedLanguages.targetLanguage
+              )
             }
           >
             Download Model
@@ -156,10 +186,11 @@ export default function TranslatorPage() {
             </Select>
             <Button
               onClick={async () => {
-                const result = await checkAvailability({
-                  sourceLanguage: selectedLanguages.sourceLanguage,
-                  targetLanguage: selectedLanguages.targetLanguage,
-                })
+                const result = await isTranslationAvailable(
+                  selectedLanguages.sourceLanguage,
+                  selectedLanguages.targetLanguage
+                )
+                setStatus(result)
               }}
             >
               Check Availability
