@@ -34,6 +34,7 @@ export default function TranslatorPage() {
   const {
     error,
     status,
+    setStatus,
     modelDownloadProgress,
     checkAvailability,
     downloadModel,
@@ -124,9 +125,6 @@ export default function TranslatorPage() {
                 <SelectItem value="mr">Marathi</SelectItem>
                 <SelectItem value="hi">Hindi</SelectItem>
                 <SelectItem value="bn">Bengali</SelectItem>
-                <SelectItem value="pa">Punjabi</SelectItem>
-                <SelectItem value="ur">Urdu</SelectItem>
-                <SelectItem value="gu">Gujarati</SelectItem>
               </SelectContent>
             </Select>
             <Select
@@ -149,9 +147,6 @@ export default function TranslatorPage() {
                 <SelectItem value="mr">Marathi</SelectItem>
                 <SelectItem value="hi">Hindi</SelectItem>
                 <SelectItem value="bn">Bengali</SelectItem>
-                <SelectItem value="pa">Punjabi</SelectItem>
-                <SelectItem value="ur">Urdu</SelectItem>
-                <SelectItem value="gu">Gujarati</SelectItem>
               </SelectContent>
             </Select>
             <Button

@@ -47,7 +47,9 @@ export default function ProofreaderPage() {
       <p>Status: {status}</p>
       {status === "downloadable" && (
         <div className="my-4">
-          <Button onClick={() => downloadModel()}>Download Model</Button>
+          <Button onClick={() => downloadModel()} className="cursor-pointer">
+            Download Model
+          </Button>
           <p>Download progress: {modelDownloadProgress}%</p>
         </div>
       )}

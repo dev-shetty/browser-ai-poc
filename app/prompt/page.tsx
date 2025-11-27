@@ -104,13 +104,17 @@ export default function PromptPage() {
     }
   }
 
+  console.log(status)
+
   return (
     <div className="p-12 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Prompt AI</h1>
       <p>Status: {status}</p>
       {status === "downloadable" && (
         <div className="my-4">
-          <Button onClick={() => downloadModel()}>Download Model</Button>
+          <Button onClick={() => downloadModel()} className="cursor-pointer">
+            Download Model
+          </Button>
           <p>Download progress: {modelDownloadProgress}%</p>
         </div>
       )}

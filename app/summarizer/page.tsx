@@ -83,7 +83,10 @@ export default function SummarizerPage() {
       <p>Status: {status}</p>
       {status === "downloadable" && (
         <div className="my-4">
-          <Button onClick={() => downloadModel({ type, format, length })}>
+          <Button
+            onClick={() => downloadModel({ type, format, length })}
+            className="cursor-pointer"
+          >
             Download Model
           </Button>
           <p>Download progress: {modelDownloadProgress}%</p>
@@ -155,7 +158,7 @@ export default function SummarizerPage() {
           {response && (
             <div className="flex gap-2 max-w-4xl">
               <div className="w-full p-4 border rounded-lg bg-zinc-50 dark:bg-zinc-900">
-                <pre className="whitespace-pre-wrap">{response}</pre>
+                <div className="whitespace-pre-wrap">{response}</div>
               </div>
             </div>
           )}
