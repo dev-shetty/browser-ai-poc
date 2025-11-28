@@ -19,6 +19,23 @@ const DEFAULT_OPTIONS = {
   sourceLanguage: SOURCE_LANGUAGE,
   targetLanguage: TARGET_LANGUAGE,
 }
+const LANGUAGES = [
+  { value: "en", label: "English" },
+  { value: "hi", label: "Hindi" },
+  { value: "bn", label: "Bengali" },
+  { value: "te", label: "Telugu" },
+  { value: "ta", label: "Tamil" },
+  { value: "mr", label: "Marathi" },
+  { value: "kn", label: "Kannada" },
+  { value: "ml", label: "Malayalam" },
+  // Foreign languages
+  { value: "it", label: "Italian" },
+  { value: "fr", label: "French" },
+  { value: "ja", label: "Japanese" },
+  { value: "es", label: "Spanish" },
+  { value: "de", label: "German" },
+  { value: "zh", label: "Chinese" },
+]
 
 export default function TranslatorPage() {
   const [text, setText] = useState<string>("")
@@ -118,13 +135,13 @@ export default function TranslatorPage() {
                 <SelectValue placeholder="Select a language" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="kn">Kannada</SelectItem>
-                <SelectItem value="ta">Tamil</SelectItem>
-                <SelectItem value="te">Telugu</SelectItem>
-                <SelectItem value="mr">Marathi</SelectItem>
-                <SelectItem value="hi">Hindi</SelectItem>
-                <SelectItem value="bn">Bengali</SelectItem>
+                {LANGUAGES.filter(
+                  (lang) => lang.value !== selectedLanguages.targetLanguage
+                ).map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Select
@@ -140,13 +157,13 @@ export default function TranslatorPage() {
                 <SelectValue placeholder="Select a language" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="kn">Kannada</SelectItem>
-                <SelectItem value="ta">Tamil</SelectItem>
-                <SelectItem value="te">Telugu</SelectItem>
-                <SelectItem value="mr">Marathi</SelectItem>
-                <SelectItem value="hi">Hindi</SelectItem>
-                <SelectItem value="bn">Bengali</SelectItem>
+                {LANGUAGES.filter(
+                  (lang) => lang.value !== selectedLanguages.sourceLanguage
+                ).map((lang) => (
+                  <SelectItem key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Button
