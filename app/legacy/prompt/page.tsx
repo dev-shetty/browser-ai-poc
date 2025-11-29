@@ -49,7 +49,7 @@ export default function TranslatorPage() {
     return promptAIModel
   }
 
-  const checkTranslationAvailability = async () => {
+  const checkPromptAIAvailability = async () => {
     if (!isPromptAIAvailable()) {
       setError("Prompt AI is not supported")
       return
@@ -120,7 +120,7 @@ export default function TranslatorPage() {
   }
 
   useEffect(() => {
-    checkTranslationAvailability()
+    checkPromptAIAvailability()
   }, [])
 
   return (
